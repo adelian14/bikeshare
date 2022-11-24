@@ -18,6 +18,7 @@ MONTHS = {	'january': 1,
 		'october': 10,
 		'november': 11,
 		'december': 12	}
+current_row = {'row':0}
 
 def get_filters():
     """
@@ -78,6 +79,7 @@ def load_data(city, month, day):
     Returns:
         df - Pandas DataFrame containing city data filtered by month and day
     """
+    current_row['row']=0
     f=open(CITY_DATA[city],'r')
     df=f.read()
     df=df.split('\n')
@@ -322,42 +324,49 @@ def set_len(s,x):
         s+=' '
     return s
 
-current_row = {'row':0}
+
 def display_5_rows(df,row,city):
     """Displays 5 individual records from the requested data"""
     if row >= len(df):
         print('All records have been displayed')
         return True
     key = ''
+    space = 52
+    if city=='new york':
+        space = 35
+    elif city=='chicago':
+        space = 45
     a=set_len('Start Time',21)
     b=set_len('End Time',21)
     c=set_len('Duartion',10)
-    d=set_len('Start Station',30)
-    e=set_len('End Station',30)
+    d=set_len('Start Station',space)
+    e=set_len('End Station',space)
     f=set_len('User Type',12)
     g=set_len('Gender',8)
     h=set_len('Year',4)
-    key=a+b+c+d+e+f
+    key=set_len('',7)+a+b+c+d+e+f
     if city!='washington':
         key+=g+h
     print(key)
     data_row = ''
     for i in range(row,min(row+5,len(df))):
         record = df[i]
+        index = set_len(str(i+1),7)
         start_time = set_len(str(record[1]),21)
         end_time = set_len(str(record[2]),21)
-        duration = set_len(str(dt.timedelta(seconds=int(record[3]))),10)
-        start_station = set_len(record[4],30)
-        end_station = set_len(record[5],30)
+        duration = set_len(str(dt.timedelta(seconds=int(float(str(record[3]))))),10)
+        start_station = set_len(record[4],space)
+        end_station = set_len(record[5],space)
         user = set_len(record[6],12)
-        gender = set_len('',8)
-        year = set_len('',4)
+        gender = set_len('Null',8)
+        year = set_len('Null',4)
+        data_row = index+start_time+end_time+duration+start_station+end_station+user
         if city != 'washington':
-            if record[7] !=' ':
+            if record[7] !='':
                 gender = set_len(record[7],8)
             if record[8] !='':
                 year = set_len(str(int(float(record[8]))),4)
-        data_row = start_time+end_time+duration+start_station+end_station+user+gender+year
+            data_row+=gender+year
         print(data_row)
     row+=5
     return False
@@ -367,19 +376,21 @@ def main():
     while True:
         city, month, day = get_filters()
         df = load_data(city, month, day)
+        
+        if len(df)>0:
+            time_stats(df)
+            station_stats(df)
+            trip_duration_stats(df)
+            user_stats(df,city)
 
-        time_stats(df)
-        station_stats(df)
-        trip_duration_stats(df)
-        user_stats(df,city)
-
-        while True:
-            restart = input('\nWould you like to display 5 individual rows? Enter yes or no.\n')
-            if restart.lower() != 'yes' or display_5_rows(df,current_row['row'],city):
-                break
-            else:
-                current_row['row'] = current_row['row'] + 5
-
+            while True:
+                restart = input('\nWould you like to display 5 individual rows? Enter yes or no.\n')
+                if restart.lower() != 'yes' or display_5_rows(df,current_row['row'],city):
+                    break
+                else:
+                    current_row['row'] = current_row['row'] + 5
+        else:
+            print('No trips are recorded given the current filters')
         restart = input('\nWould you like to restart? Enter yes or no.\n')
         if restart.lower() != 'yes':
             break
