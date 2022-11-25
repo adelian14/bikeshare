@@ -90,7 +90,7 @@ def load_data(city, month, day):
     for item in tempdf:
         item[1]=dt.datetime.strptime(item[1][2:],'%y-%m-%d %H:%M:%S')
         item[2]=dt.datetime.strptime(item[2][2:],'%y-%m-%d %H:%M:%S')
-        x=item[2]
+        x=item[1]
         if(day!='all' and month!='all'):
             if int(x.month)==MONTHS[month] and int(x.weekday())==day:
                 finaldf.append(item)
@@ -384,8 +384,8 @@ def main():
             user_stats(df,city)
 
             while True:
-                restart = input('\nWould you like to display 5 individual rows? Enter yes or no.\n')
-                if restart.lower() != 'yes' or display_5_rows(df,current_row['row'],city):
+                display = input('\nWould you like to display 5 individual trips? Enter yes or no.\n')
+                if display.lower() != 'yes' or display_5_rows(df,current_row['row'],city):
                     break
                 else:
                     current_row['row'] = current_row['row'] + 5
